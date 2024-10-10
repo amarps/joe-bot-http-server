@@ -4,6 +4,7 @@ package joehttp
 
 import (
 	"context"
+	"errors"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -25,10 +26,11 @@ type RequestEvent struct {
 }
 
 type server struct {
-	http   *http.Server
-	logger *zap.Logger
-	conf   config
-	events joe.EventEmitter
+	http         *http.Server
+	whitelistIps []string
+	logger       *zap.Logger
+	conf         config
+	events       joe.EventEmitter
 }
 
 // Server returns a joe Module that runs an HTTP server to receive HTTP requests
@@ -121,6 +123,15 @@ func (s *server) HTTPHandler(_ http.ResponseWriter, r *http.Request) {
 	}
 
 	s.events.Emit(event)
+}
+
+func (s *server) WhitelistIp(ip string) error {
+	var clientIp = net.ParseIP(ip)
+	if clientIp == nil {
+		return errors.New("invalid ip registered")
+	}
+	s.whitelistIps = append(s.whitelistIps, ip)
+	return nil
 }
 
 // Shutdown gracefully shuts down the HTTP server without interrupting any

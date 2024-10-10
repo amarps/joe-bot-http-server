@@ -35,6 +35,8 @@ import (
 )
 
 func main() {
+	joeServer := joehttp.Server("localhost:12345")
+	joeServer.WhitelistIp("192.168.0.1")
 	b := joe.New("example-bot",
 		joehttp.Server("localhost:12345"),
 		…
